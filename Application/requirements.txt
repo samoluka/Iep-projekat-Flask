@@ -1,3 +1,6 @@
 Flask
 flask_jwt_extended
 cryptography
+SQLAlchemy
+flask_sqlalchemy
+PyMySql
