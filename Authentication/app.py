@@ -77,7 +77,8 @@ def login():
     additionalClaims = {
         "forename": user.forename,
         "surname": user.surname,
-        "jmbg": user.jmbg
+        "jmbg": user.jmbg,
+        "role": "admin"
     }
     accessToken = create_access_token(identity=user.email, additional_claims=additionalClaims);
     refreshToken = create_refresh_token(identity=user.email, additional_claims=additionalClaims);
@@ -94,7 +95,8 @@ def refresh():
     additionalClaims = {
         "forename": refreshClaims["forename"],
         "surname": refreshClaims["surname"],
-        "jmbg": refreshClaims["jmbg"]
+        "jmbg": refreshClaims["jmbg"],
+        "role": refreshClaims["role"]
     };
 
     return jsonify(accessToken=create_access_token(identity=identity, additional_claims=additionalClaims)), 200
@@ -120,40 +122,6 @@ def delete():
 
     return Response(status=200);
 
-
-# Brisanje korisnika
-# Adresa /delete Tip POST
-# Zaglavlja Zaglavlja i njihov sadržaj su:
-# {
-# "Authorization": "Bearer <ACCESS_TOKEN>"
-# }
-# Vrednost <ACCESS_TOKEN> je string koji predstavlja JSON veb token za pristup
-# koji je izdat administratoru prilikom prijave.
-# Telo Telo zahteva je JSON objekat sledećeg formata:
-# {
-# "email": "....."
-# }
-# Polje email je obavezno. Sadržaj polja je string od najviše 256 karaktera koji
-# predstavlja email adresu korisnika.
-# Odgovor Ukoliko su sva tražena zaglavlja prisutna i svi traženi podaci prisutni u telu zahteva i
-# ispunjavaju navedena ograničenja, rezultat zahteva je brisanje korisnika iz baze
-# podataka i odgovor sa statusnim kodom 200 bez dodatnog sadržaj.
-# U slučaju da zaglavlje nedostaje, rezultat je odgovor sa statusnim kodom 401 i JSON
-# objektom sledećeg formata i sadržaja:
-# {
-# "msg": "Missing Authorization Header"
-# }
-# U slučaju greške, rezultat zahteva je odgovor sa statusnim kodom 400 i JSON
-# objektom sledećeg formata:
-# {
-# "message": "....."
-# }
-# Sadržaj polja message je:
-#  “Field email is missing.” ukoliko polje email nije prisutno ili je
-# vrednost polja string dužine 0;
-#  “Invalid email.” ukoliko polje email nije odgovarajućeg formata;
-#  “Unknown user.” ukoliko korisnik sa datom email adresom ne postoji;
-# Odgovarajuće provere se vrše u navedenom redosledu.
 
 if __name__ == '__main__':
     database.init_app(app)
