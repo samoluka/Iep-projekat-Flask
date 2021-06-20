@@ -1,4 +1,0 @@
-Flask
-flask_jwt_extended
-cryptography
-redis

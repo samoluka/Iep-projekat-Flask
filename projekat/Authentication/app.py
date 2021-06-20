@@ -1,5 +1,3 @@
-from email.utils import parseaddr
-
 from flask import Flask, request, Response, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 
@@ -125,4 +123,4 @@ def delete():
 
 if __name__ == '__main__':
     database.init_app(app)
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000)

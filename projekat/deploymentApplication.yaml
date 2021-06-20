@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  applicationDB:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 10
+    volumes:
+      - dbdataapp:/var/lib/mysql
+    networks:
+      - appnet
+  application:
+    image: application
+    environment:
+      - DATABASE_URL=applicationDB
+    depends_on:
+      - applicationMigration
+    ports:
+      - 5001:5000
+    networks:
+      - appnet
+
+  applicationMigration:
+    image: applicationmigration
+    environment:
+      - DATABASE_URL=applicationDB
+    depends_on:
+      applicationDB:
+        condition: service_healthy
+    networks:
+      - appnet
+volumes:
+  dbdataapp:
+networks:
+  appnet:
