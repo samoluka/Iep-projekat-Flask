@@ -50,7 +50,7 @@ def register():
     if (user):
         jsonify(message="Email already exists."), 400;
 
-    user = User(jmbg=jmbg, forename=forename, surname=surname, email=email, password=password)
+    user = User(jmbg=jmbg, forename=forename, surname=surname, email=email, password=password, role="user")
     database.session.add(user)
     database.session.commit()
 
@@ -78,7 +78,7 @@ def login():
         "forename": user.forename,
         "surname": user.surname,
         "jmbg": user.jmbg,
-        "role": "admin"
+        "role": user.role
     }
     accessToken = create_access_token(identity=user.email, additional_claims=additionalClaims);
     refreshToken = create_refresh_token(identity=user.email, additional_claims=additionalClaims);

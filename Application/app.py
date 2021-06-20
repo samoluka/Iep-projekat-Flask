@@ -1,4 +1,6 @@
+import csv
 from datetime import datetime
+import io
 
 from flask import Flask, request, Response, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
@@ -79,20 +81,19 @@ def createElection():
             .first()):
         return jsonify(message="Invalid date and time."), 400
 
-    participants = [Participant.query.filter(Participant.idparticipant == p).first() for p in participantsKey]
+    participants = Participant.query.filter(Participant.idparticipant.in_(participantsKey)).all()
 
     if (len(participants) < 2):
-        return jsonify(message="Invalid participant. 1"), 400
-    if (len([p for p in participants if not p]) > 0):
-        return jsonify(message="Invalid participant. 2"), 400
+        return jsonify(message="Invalid participant."), 400
+    if (len(participants) != len(participantsKey)):
+        return jsonify(message="Invalid participant."), 400
     if (len([p for p in participants if p.individual != individual]) > 0):
-        return jsonify(message="Invalid participant. 3"), 400
+        return jsonify(message="Invalid participant."), 400
 
     election = Election(start=start, end=end, individual=individual, participants=participants)
     database.session.add(election)
     database.session.commit()
 
-    index = 1
     pollNumbers = list(range(1, len(participants) + 1))
 
     return jsonify(pollNumbers=pollNumbers), 200
@@ -102,6 +103,7 @@ def createElection():
 @roleCheck('admin')
 def getElections():
     return jsonify(elections=[e.serialize() for e in Election.query.all()]), 200
+
 
 
 if __name__ == '__main__':
