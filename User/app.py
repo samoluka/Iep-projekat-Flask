@@ -63,8 +63,10 @@ def vote():
         votes.append((row[0], row[1]))
         index += 1
     with Redis(host=Configuration.REDIS_HOST) as redis:
-        redis.rpush(Configuration.REDIS_VOTES_KEY, votes)
-    return jsonify(), 200
+        for vote in votes:
+            redis.lpush(Configuration.REDIS_VOTES_KEY, "{},{}".format(vote[0], vote[1]))
+        redis.publish(Configuration.REDIS_SUBSCRIBE_CHANNEL, "poruka")
+    return Response("", status=200)
 
 
 if __name__ == '__main__':
