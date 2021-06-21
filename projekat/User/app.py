@@ -47,6 +47,7 @@ jwt = JWTManager(app)
 @app.route('/vote', methods=['POST'])
 @roleCheck('user')
 def vote():
+    additionalClaims = get_jwt();
     try:
         content = request.files["file"].stream.read().decode("utf-8")
     except Exception:
@@ -64,7 +65,7 @@ def vote():
         index += 1
     with Redis(host=Configuration.REDIS_HOST) as redis:
         for vote in votes:
-            redis.lpush(Configuration.REDIS_VOTES_KEY, "{},{}".format(vote[0], vote[1]))
+            redis.lpush(Configuration.REDIS_VOTES_KEY, "{},{},{}".format(vote[0], vote[1], additionalClaims['jmbg']))
         redis.publish(Configuration.REDIS_SUBSCRIBE_CHANNEL, "poruka")
     return Response("", status=200)
 

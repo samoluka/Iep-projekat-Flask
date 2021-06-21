@@ -63,7 +63,7 @@ class Vote(database.Model):
     guid = database.Column(database.String(256), nullable=False)
     pollnumber = database.Column(database.Integer, nullable=False)
     election = database.Column(database.Integer, database.ForeignKey('elections.idelection'))
-
+    electionofficialjmbg = database.Column(database.String(14), nullable=False)
     valid = database.Column(database.Boolean, nullable=False)
     reason = database.Column(database.String(256), nullable=True)
 

@@ -55,6 +55,40 @@ class Election(database.Model):
             'participants': [p.serialize() for p in self.participants]
         }
 
+    def serializeParticipant(self, pollnumber, name, result):
+        return {
+            "pollNumber": pollnumber,
+            "name": name,
+            "result": result
+        }
+
+    def participantsResults(self):
+        if (not self.individual):
+            return self.participantsResultsParlament()
+
+    def participantsResultsParlament(self):
+        votes = self.votes
+        okVotes = [v for v in votes if v.valid == True]
+        results = []
+        for p in self.participants:
+            results.append([p.name, 0])
+        for vote in okVotes:
+            results[vote.pollnumber - 1][1] += 1
+        ret = []
+        index = 1;
+        for result in results:
+            ret.append(self.serializeParticipant(index, result[0], result[1]))
+            index += 1
+        return ret
+
+    def invalidVotes(self):
+        votes = self.votes
+        invalidVotes = [v for v in votes if v.valid == False]
+        ret = []
+        for vote in invalidVotes:
+            ret.append(vote.serializeInvalid())
+        return ret
+
 
 class Vote(database.Model):
     __tablename__ = "votes"
@@ -62,11 +96,19 @@ class Vote(database.Model):
     idvote = database.Column(database.Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
     guid = database.Column(database.String(256), nullable=False)
     pollnumber = database.Column(database.Integer, nullable=False)
+    electionofficialjmbg = database.Column(database.String(14), nullable=False)
     election = database.Column(database.Integer, database.ForeignKey('elections.idelection'))
 
     valid = database.Column(database.Boolean, nullable=False)
     reason = database.Column(database.String(256), nullable=True)
 
-
     def __repr__(self):
         return "({}, {}, {})".format(self.guid, self.pollnumber)
+
+    def serializeInvalid(self):
+        return {
+            "electionOfficialJmbg": self.electionofficialjmbg,
+            "ballotGuid": self.guid,
+            "pollNumber": self.pollnumber,
+            "reason": self.reason
+        }

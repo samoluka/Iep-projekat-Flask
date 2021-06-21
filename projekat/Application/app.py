@@ -104,10 +104,94 @@ def createElection():
 def getElections():
     return jsonify(elections=[e.serialize() for e in Election.query.all()]), 200
 
+
 @app.route('/')
 def hello_world():
     return 'Hello World!'
 
+
+@app.route("/getResults", methods=["GET"])
+@jwt_required("admin")
+def getResults():
+    id = request.args.get("id")
+    election = Election.query.filter(Election.idelection == id).first()
+    participantsResults = election.participantsResults()
+    invalidVotes = election.invalidVotes()
+    return jsonify(participants=participantsResults, invalidVotes=invalidVotes);
+
+
+#  Dohvatanje rezultata izbora
+# Adresa /getResults?id=<ELECTION_ID>
+# Vrednost <ELECTION_ID> je ceo broj koji predstavlja identifikator izbora.
+# Tip GET
+# Zaglavlja Zaglavlja i njihov sadržaj su:
+# {
+# "Authorization": "Bearer <ACCESS_TOKEN>"
+# }
+# Vrednost <ACCESS_TOKEN> je string koji predstavlja JSON veb token za pristup
+# koji je izdat administratoru prilikom prijave.
+# Telo -
+# Odgovor Ukoliko su sva tražena zaglavlja prisutna i ispunjavaju navedena ograničenja, rezultat
+# zahteva je odgovor sa statusnim kodom 200 čiji je sadržaj JSON objekat sledećeg
+# formata:
+# {
+# "participants": [
+#  {
+#  "pollNumber": 1,
+#  "name": ".....",
+#  "result": 1
+#  },
+#  ......
+# ],
+# "invalidVotes": [
+#  {
+#  "electionOfficialJmbg": "....",
+#  "ballotGuid": "....",
+#  "pollNumber": 1,
+#  "reason": "....."
+#  },
+#  .....
+# ]
+# }
+# Polje participants predstavlja niz JSON objekata koji se odnose na učesnike na
+# datim izborima. Svaki objekat sadrži sledeća polja:  pollNumber: ceo broj koji predstavlja redni broj učesnika na glasačkom
+# listuću;
+#  name: string koji predstavlja ime učesnika;
+#  result: ceo broj ili realan broj koji predstavlja rezultat učesnika na datim
+# izborima;
+# Polje invalidVotes predstavlja niz JSON objekata koji se odnose na glasove koji
+# nisu važeći. Svaki objekat sadrži sledeća polja:
+#  electionOfficialJmbg: string koji predstavlja JMBG zvaničnika koji je
+# zabeležio glas;
+#  ballotGuid: string koji predstavlja jedinstveni globalni identifikator (GUID)
+# glasačkog listića;
+#  pollNumber: ceo broj koji predstavlja redni broj na glasačkom listiću koji je
+# odabran;
+#  reason: string koji predstavlja razlog zbog kojeg je glas odbijen;
+# Rezultat parlamentarnih izbora se računa pomoću D’ontovog sistema raspodele
+# mandata i u tom slučaju vrednost polja result je ceo broj koji predstavlja broj
+# mandata koji osvojila odgovarajuća politička partija. Pretpostaviti da postoji 250
+# mandata za narodne poslanike i je cenzus 5%.
+# Rezultat predsedničkih izbora se računa kao odnos broja glasova koje je dobio
+# učesnik i ukupnog broja glasova i u tom slučaju vrednost polja result je realan broj
+# iz opsega [0, 1] zaokružen na dve decimale koji predstavlja procenat glasova koji je
+# osvojio odgovarajući pojedinac.
+# U slučaju da zaglavlje nedostaje, rezultat je odgovor sa statusnim kodom 401 i JSON
+# objektom sledećeg formata i sadržaja:
+# {
+# "msg": "Missing Authorization Header"
+# }
+# U slučaju da neko polje tela nedostaje, rezultat zahteva je odgovor sa statusnim
+# kodom 400 i JSON objektom sledećeg formata:
+# {
+# "message": "....."
+# }
+# Sadržaj polja message je:
+#  “Field id is missing.” ukoliko polje id nije prisutno;
+#  “Election does not exist.” ukoliko navedeni id ne predstavlja validni
+# identifikator izbora;
+#  “Election is ongoing.” ukoliko izbori nisu završeni;
+# Odgovarajuće provere se vrše u navedenom redosledu.
 if __name__ == '__main__':
     database.init_app(app)
     app.run(debug=True, host='0.0.0.0', port=5001)

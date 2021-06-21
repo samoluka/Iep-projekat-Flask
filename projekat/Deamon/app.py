@@ -29,8 +29,8 @@ def deamon(id):
                 voteDuplicated = Vote.query.filter(Vote.guid == voteString[0]).first()
                 validDuplciated = False if voteDuplicated else True
                 validPollNumber = False if int(voteString[1]) > len(election.participants) else True
-                valid = validDuplciated or validPollNumber
-                vote = Vote(guid=voteString[0], pollnumber=int(voteString[1]), election=election.idelection, valid=valid)
+                valid = validDuplciated and validPollNumber
+                vote = Vote(guid=voteString[0], pollnumber=int(voteString[1]), election=election.idelection, valid=valid, electionofficialjmbg=voteString[2])
                 if (not validPollNumber):
                     vote.reason = "Invalid poll number."
                 if (not validDuplciated):
