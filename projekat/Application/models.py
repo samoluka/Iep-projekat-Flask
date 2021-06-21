@@ -55,18 +55,51 @@ class Election(database.Model):
             'participants': [p.serialize() for p in self.participants]
         }
 
-    def serializeParticipant(self, pollnumber, name, result):
+    def serializeParticipant(self, pollnumber, name, result, votes):
         return {
             "pollNumber": pollnumber,
             "name": name,
-            "result": result
+            "result": result,
+            "votes": votes
         }
 
     def participantsResults(self):
         if (not self.individual):
             return self.participantsResultsParlament()
+        return self.participantsResultsPresident()
 
     def participantsResultsParlament(self):
+        votes = self.votes
+        okVotes = [v for v in votes if v.valid == True]
+        results = []
+        for p in self.participants:
+            results.append([p.name, 0, -1, 0])
+        for vote in okVotes:
+            results[vote.pollnumber - 1][1] += 1
+        ret = []
+        index = 1;
+        mandats = 240
+        map = {}
+        while (mandats > 0):
+            div = []
+            index = 0
+            max = -1
+            maxInd = 0
+            for r in results:
+                if (r[1] > (0.05 * len(votes))):
+                    r[2] = r[1] / (1 + r[3])
+                    if (r[2] > max):
+                        max = r[2]
+                        maxInd = index
+                index += 1
+            results[maxInd][3] += 1
+            mandats -= 1
+        for result in results:
+            ret.append(self.serializeParticipant(index, result[0], result[3], result[1]))
+            index += 1
+        return ret
+
+    def participantsResultsPresident(self):
         votes = self.votes
         okVotes = [v for v in votes if v.valid == True]
         results = []
@@ -75,9 +108,9 @@ class Election(database.Model):
         for vote in okVotes:
             results[vote.pollnumber - 1][1] += 1
         ret = []
-        index = 1;
+        index = 1
         for result in results:
-            ret.append(self.serializeParticipant(index, result[0], result[1]))
+            ret.append(self.serializeParticipant(index, result[0], "{:.2f}".format(result[1] / len(votes))))
             index += 1
         return ret
 

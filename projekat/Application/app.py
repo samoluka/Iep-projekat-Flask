@@ -1,5 +1,5 @@
 import csv
-from datetime import datetime
+from datetime import datetime, date
 import io
 
 from flask import Flask, request, Response, jsonify
@@ -114,7 +114,14 @@ def hello_world():
 @jwt_required("admin")
 def getResults():
     id = request.args.get("id")
+    if (not id):
+        return jsonify(message="Field id is missing."), 400
     election = Election.query.filter(Election.idelection == id).first()
+    if (not election):
+        return jsonify(message="Election does not exist."), 400
+    today = datetime.today()
+    # if (election.end > today):
+    #     return jsonify(message="Election is ongoing."), 400
     participantsResults = election.participantsResults()
     invalidVotes = election.invalidVotes()
     return jsonify(participants=participantsResults, invalidVotes=invalidVotes);

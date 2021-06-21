@@ -1,23 +1,41 @@
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import orm, Column, Integer, ForeignKey, String, Boolean, create_engine
+from sqlalchemy.dialects.mysql import DATETIME
+from sqlalchemy.ext.declarative import declarative_base
+import sqlalchemy as sa
+from sqlalchemy.orm import relationship
 
-database = SQLAlchemy()
+from configuration import Configuration
+
+base = declarative_base()
+engine = create_engine(Configuration.SQLALCHEMY_DATABASE_URI)
+base.metadata.bind = engine
 
 
-class ElectionParticipants(database.Model):
+# after this:
+# base == db.Model
+# session == db.session
+# other db.* values are in sa.*
+# ie: old: db.Column(db.Integer,db.ForeignKey('s.id'))
+#     new: sa.Column(sa.Integer,sa.ForeignKey('s.id'))
+# except relationship, and backref, those are in orm
+# ie: orm.relationship, orm.backref
+# so to define a simple model
+
+class ElectionParticipants(base):
     __tablename__ = "electionparticipants"
 
-    id = database.Column(database.Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
-    idelection = database.Column(database.Integer, database.ForeignKey("elections.idelection"), nullable=False)
-    idparticipant = database.Column(database.Integer, database.ForeignKey("participants.idparticipant"), nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    idelection = Column(Integer, ForeignKey("elections.idelection"), nullable=False)
+    idparticipant = Column(Integer, ForeignKey("participants.idparticipant"), nullable=False)
 
 
-class Participant(database.Model):
+class Participant(base):
     __tablename__ = "participants"
 
-    idparticipant = database.Column(database.Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
-    name = database.Column(database.String(256), nullable=False)
-    individual = database.Column(database.Boolean, nullable=False)
-    elections = database.relationship("Election", secondary=ElectionParticipants.__table__, back_populates="participants")
+    idparticipant = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    name = Column(String(256), nullable=False)
+    individual = Column(Boolean, nullable=False)
+    elections = relationship("Election", secondary=ElectionParticipants.__table__, back_populates="participants")
 
     def __repr__(self):
         return "({}, {}, {})".format(self.idparticipant, self.name, self.individual)
@@ -36,15 +54,15 @@ class Participant(database.Model):
         }
 
 
-class Election(database.Model):
+class Election(base):
     __tablename__ = "elections"
 
-    idelection = database.Column(database.Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
-    start = database.Column(database.DATETIME, nullable=False)
-    end = database.Column(database.DATETIME, nullable=False)
-    individual = database.Column(database.Boolean, nullable=False)
-    participants = database.relationship("Participant", secondary=ElectionParticipants.__table__, back_populates="elections")
-    votes = database.relationship("Vote")
+    idelection = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    start = Column(DATETIME, nullable=False)
+    end = Column(DATETIME, nullable=False)
+    individual = Column(Boolean, nullable=False)
+    participants = relationship("Participant", secondary=ElectionParticipants.__table__, back_populates="elections")
+    votes = relationship("Vote")
 
     def serialize(self):
         return {
@@ -56,17 +74,16 @@ class Election(database.Model):
         }
 
 
-class Vote(database.Model):
+class Vote(base):
     __tablename__ = "votes"
 
-    idvote = database.Column(database.Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
-    guid = database.Column(database.String(256), nullable=False)
-    pollnumber = database.Column(database.Integer, nullable=False)
-    election = database.Column(database.Integer, database.ForeignKey('elections.idelection'))
-    electionofficialjmbg = database.Column(database.String(14), nullable=False)
-    valid = database.Column(database.Boolean, nullable=False)
-    reason = database.Column(database.String(256), nullable=True)
-
+    idvote = Column(Integer, primary_key=True, nullable=False, unique=True, autoincrement=True)
+    guid = Column(String(256), nullable=False)
+    pollnumber = Column(Integer, nullable=False)
+    election = Column(Integer, ForeignKey('elections.idelection'))
+    electionofficialjmbg = Column(String(14), nullable=False)
+    valid = Column(Boolean, nullable=False)
+    reason = Column(String(256), nullable=True)
 
     def __repr__(self):
         return "({}, {}, {})".format(self.guid, self.pollnumber)
