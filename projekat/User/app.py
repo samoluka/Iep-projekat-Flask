@@ -69,5 +69,10 @@ def vote():
     return Response("", status=200)
 
 
+@app.route('/')
+def hello():
+    return "hello", 200
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5002)

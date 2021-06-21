@@ -14,10 +14,10 @@ def createAdmin():
                                  cursorclass=pymysql.cursors.DictCursor)
     with connection.cursor() as cursor:
         sql = "SELECT * FROM users WHERE email=%s"
-        cursor.execute(sql, ('admin@admin.org',))
+        cursor.execute(sql, ('admin@admin.com',))
         result = cursor.fetchone()
         if (not result):
-            sql = "INSERT INTO users (email, password,forename,surname,role,jmbg) VALUES ('admin@admin.org', '1','admin','admin','admin','000000000000')"
+            sql = "INSERT INTO users (email, password,forename,surname,role,jmbg) VALUES ('admin@admin.com', '1','admin','admin','admin','000000000000')"
             cursor.execute(sql)
         connection.commit()
     return
