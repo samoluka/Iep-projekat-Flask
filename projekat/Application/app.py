@@ -67,7 +67,7 @@ def createElection():
 
     def is_date(string):
         try:
-            datetime.strptime(string, '%Y-%m-%d')
+            datetime.strptime(string, '%Y-%m-%d %H:%M:%S')
             return True
         except ValueError:
             return False
@@ -111,7 +111,7 @@ def hello_world():
 
 
 @app.route("/getResults", methods=["GET"])
-@jwt_required("admin")
+@roleCheck('admin')
 def getResults():
     id = request.args.get("id")
     if (not id):
@@ -120,8 +120,8 @@ def getResults():
     if (not election):
         return jsonify(message="Election does not exist."), 400
     today = datetime.today()
-    # if (election.end > today):
-    #     return jsonify(message="Election is ongoing."), 400
+    if (election.end > today):
+        return jsonify(message="Election is ongoing."), 400
     participantsResults = election.participantsResults()
     invalidVotes = election.invalidVotes()
     return jsonify(participants=participantsResults, invalidVotes=invalidVotes);

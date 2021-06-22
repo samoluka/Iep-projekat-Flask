@@ -63,10 +63,17 @@ def vote():
             return jsonify(message="Incorrect poll number on line {}.".format(index)), 400
         votes.append((row[0], row[1]))
         index += 1
-    with Redis(host=Configuration.REDIS_HOST) as redis:
-        for vote in votes:
-            redis.lpush(Configuration.REDIS_VOTES_KEY, "{},{},{}".format(vote[0], vote[1], additionalClaims['jmbg']))
-        redis.publish(Configuration.REDIS_SUBSCRIBE_CHANNEL, "poruka")
+    done = False
+    while (not done):
+        try:
+            with Redis(host=Configuration.REDIS_HOST) as redis:
+                for vote in votes:
+                    redis.lpush(Configuration.REDIS_VOTES_KEY, "{},{},{}".format(vote[0], vote[1], additionalClaims['jmbg']))
+                    print('poslao')
+                redis.publish(Configuration.REDIS_SUBSCRIBE_CHANNEL, "poruka")
+            done = True
+        except Exception as e:
+            print(e)
     return Response("", status=200)
 
 
@@ -76,4 +83,4 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True, host='0.0.0.0', port=5002)

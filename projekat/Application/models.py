@@ -49,8 +49,8 @@ class Election(database.Model):
     def serialize(self):
         return {
             'id': self.idelection,
-            'start': self.start.strftime('%Y-%m-%d'),
-            'end': self.end.strftime('%Y-%m-%d'),
+            'start': self.start.strftime('%Y-%m-%d %H:%M:%S'),
+            'end': self.end.strftime('%Y-%m-%d %H:%M:%S'),
             'individual': self.individual,
             'participants': [p.serialize() for p in self.participants]
         }
@@ -94,6 +94,7 @@ class Election(database.Model):
                 index += 1
             results[maxInd][3] += 1
             mandats -= 1
+        index = 1
         for result in results:
             ret.append(self.serializeParticipant(index, result[0], result[3], result[1]))
             index += 1
@@ -110,7 +111,7 @@ class Election(database.Model):
         ret = []
         index = 1
         for result in results:
-            ret.append(self.serializeParticipant(index, result[0], "{:.2f}".format(result[1] / len(votes))))
+            ret.append(self.serializeParticipant(index, result[0], "{:.2f}".format(result[1] / len(votes)), result[1]))
             index += 1
         return ret
 

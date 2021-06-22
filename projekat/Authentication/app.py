@@ -1,6 +1,7 @@
 from flask import Flask, request, Response, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 
+from decorators import roleCheck
 from configuration import Configuration
 from models import database, User
 from sqlalchemy import or_, and_
@@ -46,7 +47,7 @@ def register():
 
     user = User.query.filter(or_(User.jmbg == jmbg, User.email == email)).first()
     if (user):
-        jsonify(message="Email already exists."), 400;
+        return jsonify(message="Email already exists."), 400;
 
     user = User(jmbg=jmbg, forename=forename, surname=surname, email=email, password=password, role="user")
     database.session.add(user)
@@ -101,7 +102,7 @@ def refresh():
 
 
 @app.route("/delete", methods=["POST"])
-@jwt_required()
+@roleCheck('admin')
 def delete():
     email = request.json.get("email", "");
     formatChecker = FormatChecker("jmbg", email, "forename", "surname", "password")
@@ -119,6 +120,7 @@ def delete():
     database.session.commit()
 
     return Response(status=200);
+
 
 if __name__ == '__main__':
     database.init_app(app)

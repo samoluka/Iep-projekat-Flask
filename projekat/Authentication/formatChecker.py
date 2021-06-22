@@ -79,13 +79,15 @@ class FormatChecker:
         if (int(self.jmbg[9:12]) < 0 or int(self.jmbg[9:12]) > 999):
             return error
         return ""
+
     def checkEmail(self):
-        result = parseaddr(self.email);
-        if (len(result[1]) == 0):
+        regex = '[^@]+@[^@]+\.[^@]+'
+        if (not bool(re.fullmatch(regex, self.email))):
             return "Invalid email"
         return ""
+
     def checkPassword(self):
-        if (len(self.password)<8):
+        if (len(self.password) < 8):
             return "Invalid password"
         if (bool(re.search('[0-9]+', self.password)) == False):
             return "Invalid password"

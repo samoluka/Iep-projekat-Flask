@@ -18,7 +18,7 @@ services:
     environment:
       - DATABASE_URL=applicationDB
     ports:
-      - 5001:5000
+      - 5002:5000
     networks:
       - appnet
 
@@ -28,7 +28,35 @@ services:
       - DATABASE_URL=applicationDB
     networks:
       - appnet
+  user:
+    image: user
+    environment:
+      - REDIS_URL=redis
+    networks:
+      - redis
+    ports:
+      - 5003:5000
+    deploy:
+      replicas:3
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    networks:
+      - redis
+  deamon:
+    image: deamon
+    environment:
+      - REDIS_URL=redis
+      - DATABASE_URL=applicationDB
+    networks:
+      - appnet
+      - redis
+
 volumes:
   dbdataapp:
 networks:
   appnet:
+    driver: overlay
+  redis:
+    driver: overlay

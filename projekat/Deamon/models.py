@@ -1,7 +1,6 @@
 from sqlalchemy import orm, Column, Integer, ForeignKey, String, Boolean, create_engine
 from sqlalchemy.dialects.mysql import DATETIME
 from sqlalchemy.ext.declarative import declarative_base
-import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 
 from configuration import Configuration

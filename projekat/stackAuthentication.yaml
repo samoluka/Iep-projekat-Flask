@@ -18,7 +18,7 @@ services:
     environment:
       - DATABASE_URL=authenticationDB
     ports:
-      - 5000:5000
+      - 5001:5000
     networks:
       - authnet
 
@@ -32,3 +32,4 @@ volumes:
   dbdataauth:
 networks:
   authnet:
+    driver: overlay
