@@ -13,6 +13,7 @@ services:
       - dbdataapp:/var/lib/mysql
     networks:
       - appnet
+      - appnetDeamon
   application:
     image: application
     environment:
@@ -33,30 +34,36 @@ services:
     environment:
       - REDIS_URL=redis
     networks:
-      - redis
+      - redisUser
     ports:
       - 5003:5000
     deploy:
-      replicas:3
+      replicas:
+        3
   redis:
     image: redis
     ports:
       - 6379:6379
     networks:
-      - redis
+      - redisUser
+      - redisDeamon
   deamon:
     image: deamon
     environment:
       - REDIS_URL=redis
       - DATABASE_URL=applicationDB
     networks:
-      - appnet
-      - redis
+      - appnetDeamon
+      - redisDeamon
 
 volumes:
   dbdataapp:
 networks:
   appnet:
     driver: overlay
-  redis:
+  redisUser:
+    driver: overlay
+  appnetDeamon:
+    driver: overlay
+  redisDeamon:
     driver: overlay

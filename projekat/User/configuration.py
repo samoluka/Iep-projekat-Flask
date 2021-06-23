@@ -1,7 +1,7 @@
 import os;
 
-# path = os.environ["REDIS_URL"]
-path = "localhost"
+path = os.environ["REDIS_URL"]
+# path = "localhost"
 
 class Configuration():
     # SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:root@localhost:3307/application"

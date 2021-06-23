@@ -9,6 +9,7 @@ COPY Application/models.py ./models.py
 COPY Application/decorators.py ./decorators.py
 COPY Application/requirements.txt ./requirements.txt
 
+RUN echo "Europe/Belgrade" > /etc/timezone
 RUN pip install -r ./requirements.txt
 
 ENTRYPOINT ["python", "./app.py"]

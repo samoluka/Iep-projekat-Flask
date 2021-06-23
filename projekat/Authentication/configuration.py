@@ -1,8 +1,8 @@
 from datetime import timedelta;
 import os;
 
-# path = os.environ["DATABASE_URL"]
-path = "localhost:3306"
+path = os.environ["DATABASE_URL"]
+# path = "localhost:3306"
 
 
 class Configuration():

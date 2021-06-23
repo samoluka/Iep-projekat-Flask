@@ -6,7 +6,7 @@ services:
     environment:
       - REDIS_URL=redis
     networks:
-      - redis
+      - redisUser
     ports:
       - 5002:5000
 #    deploy:
@@ -16,15 +16,17 @@ services:
     ports:
       - 6379:6379
     networks:
-      - redis
+#      - redisDeamon
+      - redisUser
   deamon:
     image: deamon
     environment:
       - REDIS_URL=redis
       - DATABASE_URL=applicationDB
     networks:
-      - appnet
-      - redis
+      - appnetDeamon
+      - redisUser
 networks:
-  appnet:
-  redis:
+  appnetDeamon:
+  redisDeamon:
+#  redisUser:

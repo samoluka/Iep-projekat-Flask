@@ -64,12 +64,14 @@ def vote():
         votes.append((row[0], row[1]))
         index += 1
     done = False
+    br = 0
     while (not done):
         try:
             with Redis(host=Configuration.REDIS_HOST) as redis:
                 for vote in votes:
                     redis.lpush(Configuration.REDIS_VOTES_KEY, "{},{},{}".format(vote[0], vote[1], additionalClaims['jmbg']))
                     print('poslao')
+                    br += 1
                 redis.publish(Configuration.REDIS_SUBSCRIBE_CHANNEL, "poruka")
             done = True
         except Exception as e:
@@ -83,4 +85,4 @@ def hello():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5002)
+    app.run(debug=True, host='0.0.0.0', port=5000)
